@@ -1,211 +1,219 @@
-<!doctype html><html lang="en"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Import Localization Atlas: any country vs China</title>
-<meta name="description" content="Interactive classification of any country's imports from China by dependence, complexity, and localization priority. By Dr. Ian Helfrich.">
-<style>
-:root{--bg:#f5f7fa;--card:#fff;--ink:#16202e;--mut:#5a6472;--line:#e2e7ee;--navy:#1F3864;
- --A:#2E7D32;--B:#E8A200;--C:#2E6FB5;--D:#9AA3AD;--red:#C00000;--focus:#0b64d6}
-@media(prefers-color-scheme:dark){:root{--bg:#0e1420;--card:#161e2b;--ink:#e9edf3;--mut:#9aa6b6;
- --line:#293345;--navy:#8fb4f0;--A:#5cba61;--B:#f0b93a;--C:#5b9be0;--D:#8b95a3;--focus:#5aa0ff}}
-*{box-sizing:border-box}html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
-a{color:var(--focus)}:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:4px}
-.wrap{max-width:1200px;margin:0 auto;padding:26px 20px 70px}
-header h1{font-size:25px;margin:0 0 6px;color:var(--navy);line-height:1.2}
-.sub{color:var(--mut);margin:0 0 6px;font-size:14px}
-.picker{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px 0 18px}
-.picker select{padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font-size:15px;font-weight:600}
-.links{font-size:13px;margin:2px 0 0}.links a{margin-right:14px;text-decoration:none;font-weight:600}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:22px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
-.card .k{font-size:24px;font-weight:700;color:var(--navy)}.card .l{font-size:12px;color:var(--mut);margin-top:2px}
-.grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:18px}
-@media(max-width:880px){.grid{grid-template-columns:1fr}}
-.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:18px}
-.panel h2{font-size:16px;margin:0 0 3px}.panel .note{color:var(--mut);font-size:12.5px;margin:0 0 14px}
-.controls{display:grid;grid-template-columns:1fr 1fr;gap:14px 24px}
-@media(max-width:560px){.controls{grid-template-columns:1fr}}
-.ctl label{display:flex;justify-content:space-between;font-size:13px;font-weight:600;margin-bottom:3px}
-.ctl label .v{color:var(--navy);font-variant-numeric:tabular-nums}
-input[type=range]{width:100%;accent-color:var(--navy)}
-.btn{background:var(--navy);color:#fff;border:0;border-radius:8px;padding:8px 14px;font-weight:600;cursor:pointer;font-size:13px}
-canvas{width:100%;height:auto;display:block;border-radius:8px}
-.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--mut);margin-top:10px}
-.dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:middle}
-.tools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
-.tools input,.tools select{padding:6px 9px;border:1px solid var(--line);border-radius:7px;background:var(--card);color:var(--ink);font-size:13px}
-table{width:100%;border-collapse:collapse;font-size:12.5px}
-th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left}
-th{position:sticky;top:0;background:var(--card);color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.03em;cursor:pointer;user-select:none}
-th.num,td.num{text-align:right;font-variant-numeric:tabular-nums}
-.tblwrap{max-height:520px;overflow:auto;border:1px solid var(--line);border-radius:8px}
-.mono{font-family:ui-monospace,Menlo,monospace}
-.qA{color:var(--A);font-weight:700}.qB{color:var(--B);font-weight:700}.qC{color:var(--C);font-weight:700}.qD{color:var(--D)}
-.bars .row{display:grid;grid-template-columns:210px 1fr 92px;gap:10px;align-items:center;margin:4px 0;font-size:12px}
-.bars .lab{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.track{background:var(--line);border-radius:5px;height:14px;overflow:hidden}.fill{height:100%;border-radius:5px}
-.val{color:var(--mut);text-align:right;white-space:nowrap}
-.scope{background:linear-gradient(0deg,rgba(192,0,0,.05),rgba(192,0,0,.05));border-left:3px solid var(--red)}
-.tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--bg);padding:6px 9px;border-radius:6px;font-size:12px;opacity:0;transition:opacity .1s;max-width:260px;z-index:9}
-.foot{color:var(--mut);font-size:12px;margin-top:18px;border-top:1px solid var(--line);padding-top:14px}
-</style></head><body><div class="wrap">
-<header>
-<h1 id="title">Import Localization Atlas</h1>
-<p class="sub">Classify any country's imports from China by dependence, economic complexity, and localization priority. Pick a country, then move the weight sliders to re-rank products live. Data: CEPII BACI (HS 2022, 2022-2023) and the OEC Product Complexity Index.</p>
-<div class="picker"><label for="country" style="font-weight:600">Importer:</label>
-<select id="country" aria-label="Choose importing country"></select>
-<span class="mut" id="loading" style="color:var(--mut);font-size:13px"></span></div>
-<p class="links"><a href="https://github.com/ihelfrich/import-localization-atlas">Code and methodology</a><span style="color:var(--mut)">Prepared by Dr. Ian Helfrich</span></p>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-7cRVFV5Uo+IzFEz9WVQr6YcNBVVTF+VQ3+MHUXAOtoc='; style-src 'sha256-/0Jbz4aNDxN0VKUxP9p+NzPNkIA60N9v2BUIBEVX2OA='; connect-src 'self'; img-src 'self' data:; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Import Localization Atlas · Any country vs China</title>
+<meta name="description" content="Interactive HS6 classification of any country's imports from China by dependence, complexity, and localization priority. By Dr. Ian Helfrich.">
+<style>:root{color-scheme:light dark;--bg:#f2f5f8;--card:#fff;--ink:#142033;--mut:#5c6878;--line:#dbe2e9;--soft:#edf2f6;--navy:#173f73;--navy2:#24639f;--A:#25733a;--Asoft:#e4f3e7;--B:#946200;--Bsoft:#fff2d4;--C:#245f9e;--Csoft:#e3effb;--D:#65717e;--Dsoft:#edf0f3;--U:#73548f;--Usoft:#f0e9f7;--red:#a51d2d;--focus:#0867c9;--shadow:0 12px 36px rgba(20,32,51,.08)}
+@media(prefers-color-scheme:dark){:root{--bg:#0c1420;--card:#141f2e;--ink:#eef3f8;--mut:#a7b2c1;--line:#2b394a;--soft:#1b293a;--navy:#9cc6f3;--navy2:#6ca8e0;--A:#75cb87;--Asoft:#173824;--B:#f1bd4a;--Bsoft:#3c3014;--C:#73ade8;--Csoft:#17334f;--D:#aeb8c3;--Dsoft:#293441;--U:#c3a0df;--Usoft:#332740;--red:#ff8a98;--focus:#72b8ff;--shadow:0 12px 36px rgba(0,0,0,.2)}}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}button,input,select{font:inherit}a{color:var(--focus)}a:hover{text-decoration-thickness:2px}:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:4px}.skip{position:fixed;left:12px;top:-60px;z-index:99;background:var(--card);color:var(--ink);padding:9px 13px;border-radius:7px;box-shadow:var(--shadow)}.skip:focus{top:12px}.wrap{max-width:1280px;margin:0 auto;padding:0 22px 72px}.hero{margin:0 -22px 22px;padding:28px max(22px,calc((100vw - 1280px)/2 + 22px)) 24px;background:linear-gradient(135deg,color-mix(in srgb,var(--navy) 10%,var(--card)),var(--card) 55%,color-mix(in srgb,var(--C) 7%,var(--card)));border-bottom:1px solid var(--line)}.eyebrow{margin:0 0 5px;color:var(--navy);font-size:11px;font-weight:800;letter-spacing:.11em;text-transform:uppercase}.hero h1{font-size:clamp(25px,4vw,38px);letter-spacing:-.025em;line-height:1.12;margin:0 0 8px;color:var(--navy)}.lead{max-width:900px;color:var(--mut);font-size:15px;margin:0}.byline{margin:8px 0 0;font-size:12.5px;color:var(--mut)}.byline a{font-weight:700;text-decoration:none;margin-right:12px}.countrybar{display:grid;grid-template-columns:minmax(180px,.85fr) minmax(230px,1.25fr) auto;gap:10px;align-items:end;margin-top:20px;max-width:950px}.field label,.field-label{display:block;font-size:12px;font-weight:750;color:var(--mut);margin:0 0 4px}.input,select{width:100%;border:1px solid var(--line);border-radius:9px;background:var(--card);color:var(--ink);padding:9px 11px;min-height:42px}.input:disabled,select:disabled{opacity:.6}.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.btn{border:1px solid transparent;border-radius:9px;background:var(--navy2);color:#fff;padding:9px 13px;min-height:40px;font-size:13px;font-weight:750;cursor:pointer;white-space:nowrap}.btn:hover{filter:brightness(1.06)}.btn:disabled{cursor:not-allowed;opacity:.55}.btn.secondary{background:var(--card);border-color:var(--line);color:var(--ink)}.statusline{min-height:22px;margin:7px 0 0;color:var(--mut);font-size:12.5px}.statusline.error{color:var(--red);font-weight:650}.spinner{display:inline-block;width:12px;height:12px;border:2px solid var(--line);border-top-color:var(--navy);border-radius:50%;animation:spin .7s linear infinite;margin-right:6px;vertical-align:-2px}@keyframes spin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}.spinner{animation:none;border-top-color:var(--line);background:var(--navy)}}.cards{display:grid;grid-template-columns:repeat(5,minmax(130px,1fr));gap:11px;margin-bottom:18px}.card{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:14px 15px;min-height:92px;box-shadow:0 3px 14px rgba(20,32,51,.03)}.card .k{font-size:clamp(20px,2.3vw,28px);font-weight:780;letter-spacing:-.02em;color:var(--navy);font-variant-numeric:tabular-nums}.card .l{font-size:11.5px;color:var(--mut);margin-top:3px}.panel{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:18px 20px;margin-bottom:18px;box-shadow:0 3px 14px rgba(20,32,51,.025)}.panelhead{display:flex;align-items:start;justify-content:space-between;gap:12px;margin-bottom:13px}.panel h2{font-size:17px;line-height:1.3;margin:0}.note{color:var(--mut);font-size:12.5px;margin:3px 0 0}.controls{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 24px}.ctl label{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;font-weight:700;margin-bottom:3px}.ctl output{color:var(--navy);font-variant-numeric:tabular-nums;white-space:nowrap}input[type=range]{width:100%;height:25px;accent-color:var(--navy2);cursor:pointer}.controlfoot{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-top:13px;padding-top:11px;border-top:1px solid var(--line)}.controlfoot p{margin:0;color:var(--mut);font-size:12px}.grid{display:grid;grid-template-columns:minmax(0,1.13fr) minmax(460px,.87fr);gap:18px}.grid>.panel{min-width:0}.scatterwrap{position:relative}.scatterwrap canvas{width:100%;height:auto;aspect-ratio:760/520;display:block;border:1px solid var(--line);border-radius:10px;background:var(--card);touch-action:pan-y}.legend{display:flex;gap:8px 14px;flex-wrap:wrap;font-size:11.5px;color:var(--mut);margin-top:10px}.legend span{white-space:nowrap}.dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:0}.dot.A{background:var(--A)}.dot.B{background:var(--B)}.dot.C{background:var(--C)}.dot.D{background:var(--D)}.dot.U{background:var(--U)}.map-summary{margin:8px 0 0;color:var(--mut);font-size:11.5px}.tools{display:grid;grid-template-columns:minmax(150px,1fr) minmax(125px,.8fr) minmax(120px,.65fr);gap:7px;margin-bottom:9px}.tools .input,.tools select{min-height:36px;padding:6px 8px;font-size:12.5px}.table-actions{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 9px}.table-actions .btn{min-height:34px;padding:6px 10px;font-size:12px}.chapter-summary{background:var(--soft);border-radius:9px;padding:8px 10px;margin:0 0 9px;font-size:12px;color:var(--mut)}.chapter-summary[hidden]{display:none}.tblwrap{max-height:570px;overflow:auto;border:1px solid var(--line);border-radius:9px;overscroll-behavior:contain}table{width:100%;border-collapse:collapse;font-size:12px}caption{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}th,td{padding:7px 7px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}th{position:sticky;top:0;z-index:1;background:var(--card);color:var(--mut);font-size:10.5px;text-transform:uppercase;letter-spacing:.035em;white-space:nowrap}th button{appearance:none;border:0;background:transparent;color:inherit;padding:0;font:inherit;text-transform:inherit;letter-spacing:inherit;cursor:pointer}th[aria-sort=ascending] button::after{content:" ▲"}th[aria-sort=descending] button::after{content:" ▼"}th.num,td.num{text-align:right;font-variant-numeric:tabular-nums}.product{min-width:180px;max-width:330px}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;white-space:nowrap}.badge{display:inline-block;border-radius:99px;padding:2px 7px;font-size:10px;font-weight:800;white-space:nowrap}.badge.A{color:var(--A);background:var(--Asoft)}.badge.B{color:var(--B);background:var(--Bsoft)}.badge.C{color:var(--C);background:var(--Csoft)}.badge.D{color:var(--D);background:var(--Dsoft)}.badge.U{color:var(--U);background:var(--Usoft)}.more{display:block;margin:10px auto 0}.empty{text-align:center;color:var(--mut);padding:28px!important}.sectorgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 18px}.sector{display:grid;grid-template-columns:minmax(175px,1fr) minmax(90px,.8fr) 98px;gap:9px;align-items:center;border:0;border-radius:7px;background:transparent;color:var(--ink);padding:4px 5px;text-align:left;cursor:pointer;font-size:11.5px}.sector:hover{background:var(--soft)}.sector .lab{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sector .val{color:var(--mut);text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}.sector progress{width:100%;height:12px;border:0;border-radius:8px;overflow:hidden;background:var(--line)}.sector progress::-webkit-progress-bar{background:var(--line);border-radius:8px}.sector progress::-webkit-progress-value{background:var(--navy2);border-radius:8px}.sector progress::-moz-progress-bar{background:var(--navy2);border-radius:8px}.sector.high progress::-webkit-progress-value{background:var(--red)}.sector.high progress::-moz-progress-bar{background:var(--red)}.methodgrid{display:grid;grid-template-columns:1.15fr .85fr;gap:24px}.methodgrid h3{font-size:13px;margin:0 0 5px}.methodgrid p,.methodgrid li{font-size:12.5px;color:var(--mut)}.methodgrid p{margin:0 0 9px}.methodgrid ul{padding-left:18px;margin:0}.formula{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--soft);border-radius:8px;padding:9px 10px;color:var(--ink)!important;overflow-wrap:anywhere}.scope{background:linear-gradient(0deg,color-mix(in srgb,var(--red) 5%,var(--card)),color-mix(in srgb,var(--red) 5%,var(--card)));border-left:4px solid var(--red)}details summary{font-weight:750;cursor:pointer}.details-body{padding-top:12px}.foot{color:var(--mut);font-size:11.5px;margin-top:18px;border-top:1px solid var(--line);padding-top:14px}.tip{position:fixed;pointer-events:none;background:#111b28;color:#f6f8fb;padding:7px 9px;border-radius:7px;font-size:11.5px;opacity:0;transition:opacity .08s;max-width:300px;z-index:20;box-shadow:var(--shadow);white-space:pre-line}.tip.show{opacity:1}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.noscript{padding:12px;background:var(--Bsoft);color:var(--B);border:1px solid var(--B);border-radius:9px}.is-loading #workspace{opacity:.55;pointer-events:none}
+.tip{left:12px;bottom:12px;max-width:min(300px,calc(100vw - 24px))}
+@media(max-width:1080px){.cards{grid-template-columns:repeat(3,1fr)}.grid{grid-template-columns:1fr}.sectorgrid{grid-template-columns:1fr}.product{max-width:none}}
+@media(max-width:720px){.wrap{padding-left:13px;padding-right:13px}.hero{margin-left:-13px;margin-right:-13px;padding-left:13px;padding-right:13px}.countrybar{grid-template-columns:1fr}.actions{align-items:end}.cards{grid-template-columns:repeat(2,1fr)}.controls{grid-template-columns:1fr 1fr}.methodgrid{grid-template-columns:1fr}.panel{padding:15px 13px}.tools{grid-template-columns:1fr 1fr}.tools .searchtool{grid-column:1/-1}.hide-mobile{display:none}.tblwrap{max-height:68vh}.sector{grid-template-columns:minmax(150px,1fr) 85px}.sector progress{display:none}}
+@media(max-width:440px){.cards{grid-template-columns:1fr 1fr;gap:8px}.card{min-height:84px;padding:11px}.controls{grid-template-columns:1fr}.controlfoot{align-items:flex-start;flex-direction:column}.tools{grid-template-columns:1fr}.tools .searchtool{grid-column:auto}.actions .btn{flex:1}.sector{grid-template-columns:minmax(130px,1fr) 84px}}</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to atlas</a>
+<div class="wrap" id="app">
+<header class="hero">
+  <p class="eyebrow">Trade strategy · HS6 evidence</p>
+  <h1 id="title">Import Localization Atlas</h1>
+  <p class="lead">Explore an importing country's exposure to China, product complexity, and localization priority. Rankings update instantly as assumptions change; all calculations run in your browser.</p>
+  <p class="byline"><a href="https://github.com/ihelfrich/import-localization-atlas">Code and methodology</a>Prepared by Dr. Ian Helfrich, PhD trade economist</p>
+  <div class="countrybar">
+    <div class="field"><label for="countrySearch">Find a country</label><input class="input" id="countrySearch" type="search" placeholder="Type a name or ISO3" autocomplete="off"></div>
+    <div class="field"><label for="country">Importing country</label><select id="country" disabled aria-describedby="countryStatus"><option>Loading country index…</option></select></div>
+    <div class="actions"><button class="btn secondary" id="share" type="button">Copy share link</button></div>
+  </div>
+  <p class="statusline" id="countryStatus" role="status" aria-live="polite"><span class="spinner" aria-hidden="true"></span>Loading country index…</p>
 </header>
+<noscript><p class="noscript">This atlas requires JavaScript to load and analyze the local country data files.</p></noscript>
+<main id="main">
+  <section class="cards" id="kpis" aria-label="Country summary" aria-live="polite"></section>
+  <div id="workspace">
+    <section class="panel" aria-labelledby="controls-title">
+      <div class="panelhead"><div><h2 id="controls-title">Scoring assumptions</h2><p class="note">Raw weights are normalized to 100%. Thresholds set the decision-map boundaries.</p></div></div>
+      <div class="controls">
+        <div class="ctl"><label for="wD">Import dependence <output id="wDv" for="wD"></output></label><input type="range" id="wD" min="0" max="100" step="0.1" value="41.7"></div>
+        <div class="ctl"><label for="wS">Import scale <output id="wSv" for="wS"></output></label><input type="range" id="wS" min="0" max="100" step="0.1" value="25"></div>
+        <div class="ctl"><label for="wC">Economic complexity <output id="wCv" for="wC"></output></label><input type="range" id="wC" min="0" max="100" step="0.1" value="33.3"></div>
+        <div class="ctl"><label for="eThr">Exposure threshold <output id="eThrv" for="eThr"></output></label><input type="range" id="eThr" min="0" max="100" step="1" value="60"></div>
+        <div class="ctl"><label for="cThr">Complexity threshold <output id="cThrv" for="cThr"></output></label><input type="range" id="cThr" min="0" max="100" step="1" value="60"></div>
+      </div>
+      <div class="controlfoot"><p id="weightNote" aria-live="polite"></p><button class="btn secondary" id="reset" type="button">Reset defaults</button></div>
+    </section>
 
-<div class="cards" id="kpis" aria-live="polite"></div>
+    <div class="grid">
+      <section class="panel" aria-labelledby="map-title">
+        <div class="panelhead"><div><h2 id="map-title">Decision map</h2><p class="note">Exposure combines normalized dependence (60%) and scale (40%); point area increases with China import value.</p></div></div>
+        <div class="scatterwrap"><canvas id="scatter" width="760" height="520" role="img" aria-describedby="mapSummary">Products plotted by China exposure and economic complexity. See the adjacent table for accessible detail.</canvas></div>
+        <div class="legend" aria-label="Quadrant legend">
+          <span><i class="dot A"></i>A Localize <b id="nA"></b></span><span><i class="dot B"></i>B Diversify <b id="nB"></b></span><span><i class="dot C"></i>C Watch <b id="nC"></b></span><span><i class="dot D"></i>D Low <b id="nD"></b></span><span><i class="dot U"></i>U Missing PCI <b id="nU"></b></span>
+        </div>
+        <p class="map-summary" id="mapSummary"></p>
+      </section>
 
-<div class="panel">
-<h2>Scoring weights and thresholds</h2>
-<p class="note">The composite score is a weighted blend of three normalized indicators (0-100), re-scaled to sum to one. Thresholds set the quadrant boundaries. Indicators are normalized within the selected country's import basket.</p>
-<div class="controls">
-  <div class="ctl"><label for="wD">Import dependence <span class="v" id="wDv"></span></label><input type="range" id="wD" min="0" max="100" value="42"></div>
-  <div class="ctl"><label for="wS">Import scale <span class="v" id="wSv"></span></label><input type="range" id="wS" min="0" max="100" value="25"></div>
-  <div class="ctl"><label for="wC">Economic complexity <span class="v" id="wCv"></span></label><input type="range" id="wC" min="0" max="100" value="33"></div>
-  <div class="ctl"><label for="eThr">Exposure threshold <span class="v" id="eThrv"></span></label><input type="range" id="eThr" min="0" max="100" value="60"></div>
-  <div class="ctl"><label for="cThr">Complexity threshold <span class="v" id="cThrv"></span></label><input type="range" id="cThr" min="0" max="100" value="60"></div>
-  <div class="ctl" style="align-self:end"><button class="btn" id="reset" type="button">Reset defaults</button></div>
-</div>
-</div>
+      <section class="panel" aria-labelledby="table-title">
+        <div class="panelhead"><div><h2 id="table-title">Ranked products</h2><p class="note" id="tableCount" aria-live="polite"></p></div></div>
+        <div class="tools">
+          <input class="input searchtool" id="search" type="search" placeholder="Search product or HS6" aria-label="Search products">
+          <select id="chapterSelect" aria-label="Filter by HS2 chapter"><option value="">All chapters</option></select>
+          <select id="quadrantSelect" aria-label="Filter by priority"><option value="">All priorities</option><option value="A">A Localize</option><option value="B">B Diversify</option><option value="C">C Watch</option><option value="D">D Low</option><option value="U">U Missing PCI</option></select>
+        </div>
+        <div class="table-actions"><button class="btn secondary" id="download" type="button">Download filtered CSV</button><button class="btn secondary" id="clearFilters" type="button">Clear filters</button></div>
+        <p class="chapter-summary" id="chapterSummary" hidden></p>
+        <div class="tblwrap" tabindex="0" aria-label="Scrollable ranked-products table">
+          <table id="table"><caption>Products ranked by composite priority score</caption><thead><tr>
+            <th class="num" data-key="rank" aria-sort="ascending"><button type="button">Rank</button></th><th data-key="hs6"><button type="button">HS6</button></th><th data-key="name"><button type="button">Product</button></th><th class="num" data-key="Mchina"><button type="button">China $m</button></th><th class="num hide-mobile" data-key="D"><button type="button">Dep.</button></th><th class="num hide-mobile" data-key="PCI"><button type="button">PCI</button></th><th class="num" data-key="cps"><button type="button">CPS</button></th><th data-key="q"><button type="button">Priority</button></th>
+          </tr></thead><tbody id="tableBody"></tbody></table>
+        </div>
+        <button class="btn secondary more" id="showMore" type="button" hidden>Show 100 more</button>
+      </section>
+    </div>
 
-<div class="grid">
-<div class="panel">
-<h2>The decision map</h2>
-<p class="note">Each product by China exposure (horizontal) and economic complexity (vertical); size is import value. Upper-right (green) is the localize quadrant. Hover a point for detail.</p>
-<canvas id="scatter" width="720" height="520" role="img" aria-label="Scatter of products by China exposure and economic complexity, colored by quadrant. The accessible ranking is the table to the right."></canvas>
-<div class="legend">
- <span><i class="dot" style="background:var(--A)"></i>A Localize <span id="nA"></span></span>
- <span><i class="dot" style="background:var(--B)"></i>B Diversify <span id="nB"></span></span>
- <span><i class="dot" style="background:var(--C)"></i>C Watch <span id="nC"></span></span>
- <span><i class="dot" style="background:var(--D)"></i>D Low <span id="nD"></span></span>
-</div>
-</div>
+    <section class="panel" aria-labelledby="sector-title">
+      <div class="panelhead"><div><h2 id="sector-title">HS2 chapter exposure</h2><p class="note">Top chapters by China import value. Dependence uses exact world imports for the HS6 products sourced from China; click a row to filter the ranking. Red indicates at least 50% dependence.</p></div></div>
+      <div class="sectorgrid" id="sectors"></div>
+    </section>
+  </div>
 
-<div class="panel">
-<h2>Ranked products <span class="note" id="tblcount" style="font-weight:400"></span></h2>
-<div class="tools">
- <input id="search" type="search" placeholder="Search product or HS6" aria-label="Search products">
- <select id="chsel" aria-label="Filter by HS2 chapter"><option value="">All chapters</option></select>
- <select id="qsel" aria-label="Filter by quadrant"><option value="">All quadrants</option><option value="A">A Localize</option><option value="B">B Diversify</option><option value="C">C Watch</option><option value="D">D Low</option></select>
-</div>
-<div class="tblwrap"><table id="tbl"><thead><tr>
- <th data-k="rank" class="num">#</th><th data-k="hs6">HS6</th><th data-k="name">Product</th>
- <th data-k="Mchina" class="num">China $m</th><th data-k="D" class="num">Dep%</th>
- <th data-k="PCI" class="num">PCI</th><th data-k="cps" class="num">CPS</th><th data-k="q">Q</th>
-</tr></thead><tbody id="tbody"></tbody></table></div>
-</div>
-</div>
+  <section class="panel" aria-labelledby="method-title">
+    <details><summary id="method-title">Method, interpretation, and citation</summary><div class="details-body methodgrid">
+      <div><h3>How the score works</h3><p>Within each country's China-import basket, dependence, log10 China import value, and PCI are winsorized at the 1st/99th percentiles and min-max normalized to 0–100. The composite priority score (CPS) is a weighted mean over available indicators.</p><p class="formula">CPS = Σ(weight × normalized indicator) / Σ(available weights)</p><p>Exposure is fixed at 0.6 × normalized dependence + 0.4 × normalized scale. Sophistication is normalized PCI. Threshold equality counts as “high.” A material shortlist item is in quadrant A and exceeds $5 million of China imports.</p></div>
+      <div><h3>Reading the data carefully</h3><ul><li>PCI is bridged from HS2012 to HS2022 by exact HS6 where available, then an HS4 fallback. Products with no PCI remain ranked on available indicators but are marked U—not treated as low complexity.</li><li>2022–2023 values average reported positive BACI flows. BACI has no explicit zero-flow rows; absent rows are not imputed.</li><li>Chapter dependence covers products with observed China imports, because zero-China HS6 rows are not shipped to the browser.</li><li>Suggested citation: Helfrich, Ian (2026), <em>Import Localization Atlas</em>.</li></ul></div>
+    </div></details>
+  </section>
 
-<div class="panel">
-<h2>Sector dependence: top chapters by China import value</h2>
-<p class="note">Red marks chapters that are also at least 50 percent China-dependent for this country.</p>
-<div class="bars" id="bars"></div>
-</div>
-
-<div class="panel scope">
-<h2>Scope and honesty note</h2>
-<p class="note" style="margin:0">Scores rest on the dimensions computable from hard public data: import dependence, scale, and economic complexity. Three dimensions of the full framework (domestic value added, ESG, policy alignment) need country-specific data and are left as documented inputs, not fabricated. Treat the localize shortlist as a first screen, not a finished investment list.</p>
-</div>
-
-<p class="foot">Data: CEPII BACI (Etalab 2.0 licence), HS 2022, 2022-2023 average, and the Observatory of Economic Complexity Product Complexity Index. Only countries with at least 200 million dollars of imports from China are included. Runs entirely in your browser. Method and tool by Dr. Ian Helfrich. &copy; 2026 Ian Helfrich.</p>
+  <section class="panel scope" aria-labelledby="scope-title"><h2 id="scope-title">Scope and honesty note</h2><p class="note">Scores rest on dimensions computable from hard public data: import dependence, scale, and economic complexity. Three dimensions of the full framework—domestic value added, ESG, and policy alignment—need country-specific data and are left as documented inputs, not fabricated. Treat the Localize shortlist as a first screen, not a finished investment list. This tool is a synthesis-and-application; the two-axis typology is not claimed as novel. The novel VCC index and reverse-dependence round-trip are developed in separate work.</p></section>
+</main>
+<p class="foot">Data: CEPII BACI (Etalab 2.0 licence), HS 2022, 2022–2023 average, and Observatory of Economic Complexity PCI. Countries require at least $200 million of imports from China. No external scripts, fonts, analytics, or data services are used. Method and tool by Dr. Ian Helfrich. © 2026 Ian Helfrich.</p>
 </div>
 <div class="tip" id="tip" role="status"></div>
-<script>
-const CHNAME={"01":"Animals; live","02":"Meat and edible meat offal","03":"Fish and crustaceans, molluscs and other aqu","04":"Dairy produce; birds' eggs; natural honey; e","05":"Animal originated products; not elsewhere sp","06":"Trees and other plants, live; bulbs, roots a","07":"Vegetables and certain roots and tubers; edi","08":"Fruit and nuts, edible; peel of citrus fruit","09":"Coffee, tea, mate and spices","10":"Cereals","11":"Products of the milling industry; malt, star","12":"Oil seeds and oleaginous fruits; miscellaneo","13":"Lac; gums, resins and other vegetable saps a","14":"Vegetable plaiting materials; vegetable prod","15":"Animal, vegetable or microbial fats and oils","16":"Meat, fish, crustaceans, molluscs or other a","17":"Sugars and sugar confectionery","18":"Cocoa and cocoa preparations","19":"Preparations of cereals, flour, starch or mi","20":"Preparations of vegetables, fruit, nuts or o","21":"Miscellaneous edible preparations","22":"Beverages, spirits and vinegar","23":"Food industries, residues and wastes thereof","24":"Tobacco and manufactured tobacco substitutes","25":"Salt; sulphur; earths, stone; plastering mat","26":"Ores, slag and ash","27":"Mineral fuels, mineral oils and products of ","28":"Inorganic chemicals; organic and inorganic c","29":"Organic chemicals","30":"Pharmaceutical products","31":"Fertilizers","32":"Tanning or dyeing extracts; tannins and thei","33":"Essential oils and resinoids; perfumery, cos","34":"Soap, organic surface-active agents; washing","35":"Albuminoidal substances; modified starches; ","36":"Explosives; pyrotechnic products; matches; p","37":"Photographic or cinematographic goods","38":"Chemical products n.e.c.","39":"Plastics and articles thereof","40":"Rubber and articles thereof","41":"Raw hides and skins (other than furskins) an","42":"Articles of leather; saddlery and harness; t","43":"Furskins and artificial fur; manufactures th","44":"Wood and articles of wood; wood charcoal","45":"Cork and articles of cork","46":"Manufactures of straw, esparto or other plai","47":"Pulp of wood or other fibrous cellulosic mat","48":"Paper and paperboard; articles of paper pulp","49":"Printed books, newspapers, pictures and othe","50":"Silk","51":"Wool, fine or coarse animal hair; horsehair ","52":"Cotton","53":"Vegetable textile fibres; paper yarn and wov","54":"Man-made filaments; strip and the like of ma","55":"Man-made staple fibres","56":"Wadding, felt and nonwovens, special yarns; ","57":"Carpets and other textile floor coverings","58":"Fabrics; special woven fabrics, tufted texti","59":"Textile fabrics; impregnated, coated, covere","60":"Fabrics; knitted or crocheted","61":"Apparel and clothing accessories; knitted or","62":"Apparel and clothing accessories; not knitte","63":"Textiles, made up articles; sets; worn cloth","64":"Footwear; gaiters and the like; parts of suc","65":"Headgear and parts thereof","66":"Umbrellas, sun umbrellas, walking-sticks, se","67":"Feathers and down, prepared; and articles ma","68":"Stone, plaster, cement, asbestos, mica or si","69":"Ceramic products","70":"Glass and glassware","71":"Natural, cultured pearls; precious, semi-pre","72":"Iron and steel","73":"Iron or steel articles","74":"Copper and articles thereof","75":"Nickel and articles thereof","76":"Aluminium and articles thereof","78":"Lead and articles thereof","79":"Zinc and articles thereof","80":"Tin; articles thereof","81":"Metals; n.e.c., cermets and articles thereof","82":"Tools, implements, cutlery, spoons and forks","83":"Metal; miscellaneous products of base metal","84":"Machinery and mechanical appliances, boilers","85":"Electrical machinery and equipment and parts","86":"Railway, tramway locomotives, rolling-stock ","87":"Vehicles; other than railway or tramway roll","88":"Aircraft, spacecraft, and parts thereof","89":"Ships, boats and floating structures","90":"Optical, photographic, cinematographic, meas","91":"Clocks and watches and parts thereof","92":"Musical instruments; parts and accessories o","93":"Arms and ammunition; parts and accessories t","94":"Furniture; bedding, mattresses, mattress sup","95":"Toys, games and sports requisites; parts and","96":"Miscellaneous manufactured articles","97":"Works of art; collectors' pieces and antique","99":"Commodities not specified according to kind"};
-const QC={A:'',B:'',C:'',D:''};function refreshQC(){for(const k in QC)QC[k]=getComputedStyle(document.documentElement).getPropertyValue('--'+k);}refreshQC();
-let PROD=[], COMP=[], INDEX=[];
-const S={wD:42,wS:25,wC:33,eThr:60,cThr:60,sortK:'cps',sortDir:1,q:'',ch:'',search:'',iso:'',name:''};
-function norm(){const s=S.wD+S.wS+S.wC||1;return[S.wD/s,S.wS/s,S.wC/s];}
-// record: 0 hs6,1 name,2 ch,3 Mchina$m,4 D%,5 PCI,6 zD,7 zS,8 zC,9 EXP,10 SOPH,11 mat
-function compute(){const[wd,ws,wc]=norm();COMP=PROD.map(p=>{
- const zD=p[6],zS=p[7],zC=p[8];let num=0,den=0;
- if(zD!=null){num+=wd*zD;den+=wd;}if(zS!=null){num+=ws*zS;den+=ws;}if(zC!=null){num+=wc*zC;den+=wc;}
- const cps=den>0?num/den:null;
- const hiE=p[9]!=null&&p[9]>=S.eThr,hiC=p[10]!=null&&p[10]>=S.cThr;
- const q=hiE&&hiC?'A':hiE&&!hiC?'B':!hiE&&hiC?'C':'D';
- return{hs6:p[0],name:p[1],ch:p[2],Mchina:p[3],D:p[4],PCI:p[5],EXP:p[9],SOPH:p[10],mat:p[11],cps,q};});}
-function fmt(x,d){return x==null?'-':x.toFixed(d);}
-function kpis(){const tot=PROD.reduce((a,p)=>a+(p[3]||0),0)/1000;
- const A=COMP.filter(c=>c.q==='A'),short=A.filter(c=>c.mat);
- const shortVal=short.reduce((a,c)=>a+c.Mchina,0)/1000;const cnt={A:0,B:0,C:0,D:0};COMP.forEach(c=>cnt[c.q]++);
- document.getElementById('kpis').innerHTML=[
-  ['$'+tot.toFixed(1)+'b',S.name+' imports from China'],
-  [PROD.length.toLocaleString(),'HS6 products'],
-  [cnt.A.toLocaleString(),'in Localize quadrant (A)'],
-  [short.length.toLocaleString(),'shortlist (>$5m, $'+shortVal.toFixed(1)+'b)'],
- ].map(c=>`<div class="card"><div class="k">${c[0]}</div><div class="l">${c[1]}</div></div>`).join('');
- nA.textContent='('+cnt.A+')';nB.textContent='('+cnt.B+')';nC.textContent='('+cnt.C+')';nD.textContent='('+cnt.D+')';}
-const cv=document.getElementById('scatter'),ctx=cv.getContext('2d');
-const PADL=54,PADR=18,PADT=20,PADB=44,W=720,H=520;
-const sx=v=>PADL+(v/100)*(W-PADL-PADR),sy=v=>H-PADB-(v/100)*(H-PADT-PADB);
-function scatter(){ctx.clearRect(0,0,W,H);const cs=getComputedStyle(document.documentElement);
- ctx.strokeStyle=cs.getPropertyValue('--line');ctx.setLineDash([4,4]);ctx.beginPath();
- ctx.moveTo(sx(S.eThr),PADT);ctx.lineTo(sx(S.eThr),H-PADB);ctx.moveTo(PADL,sy(S.cThr));ctx.lineTo(W-PADR,sy(S.cThr));ctx.stroke();ctx.setLineDash([]);
- const order={D:0,C:1,B:2,A:3};
- COMP.slice().sort((a,b)=>order[a.q]-order[b.q]).forEach(c=>{if(c.EXP==null||c.SOPH==null)return;
-  const r=1.4+2.4*Math.min(1,Math.max(0,Math.log10(Math.max(c.Mchina,0.01))+1)/4);
-  ctx.globalAlpha=c.q==='A'?.85:.32;ctx.fillStyle=QC[c.q].trim();
-  ctx.beginPath();ctx.arc(sx(c.EXP),sy(c.SOPH),c.q==='A'?r*1.3:r,0,7);ctx.fill();});
- ctx.globalAlpha=1;ctx.fillStyle=cs.getPropertyValue('--mut');ctx.font='12px sans-serif';ctx.textAlign='center';
- ctx.fillText('China exposure  →',W/2,H-12);ctx.save();ctx.translate(14,H/2);ctx.rotate(-Math.PI/2);ctx.fillText('Economic complexity  →',0,0);ctx.restore();
- ctx.fillStyle=QC.A.trim();ctx.fillText('A LOCALIZE',sx(82),sy(96));ctx.fillStyle=QC.B.trim();ctx.fillText('B DIVERSIFY',sx(82),sy(6));
- ctx.fillStyle=QC.C.trim();ctx.fillText('C WATCH',sx(16),sy(96));ctx.fillStyle=QC.D.trim();ctx.fillText('D LOW',sx(14),sy(6));}
-function tableData(){let rows=COMP.filter(c=>c.cps!=null);
- if(S.q)rows=rows.filter(c=>c.q===S.q);if(S.ch)rows=rows.filter(c=>c.ch===S.ch);
- if(S.search){const q=S.search.toLowerCase();rows=rows.filter(c=>c.name.toLowerCase().includes(q)||c.hs6.includes(q));}
- rows.sort((a,b)=>{let A,B;if(S.sortK==='rank'||S.sortK==='cps'){A=a.cps;B=b.cps;}
-  else if(S.sortK==='name'){A=a.name;B=b.name;}else if(S.sortK==='hs6'){A=a.hs6;B=b.hs6;}else if(S.sortK==='q'){A=a.q;B=b.q;}else{A=a[S.sortK];B=b[S.sortK];}
-  return (A<B?-1:A>B?1:0)*(S.sortK==='cps'||S.sortK==='rank'?-1:1)*S.sortDir;});return rows;}
-function table(){const rows=tableData();document.getElementById('tblcount').textContent='('+rows.length+' shown)';
- document.getElementById('tbody').innerHTML=rows.slice(0,60).map((c,i)=>
-  `<tr><td class="num">${i+1}</td><td class="mono">${c.hs6}</td><td>${c.name.replace(/</g,'&lt;')}</td>
-   <td class="num">${fmt(c.Mchina,1)}</td><td class="num">${fmt(c.D,0)}%</td><td class="num">${fmt(c.PCI,2)}</td>
-   <td class="num"><b>${fmt(c.cps,1)}</b></td><td class="q${c.q}">${c.q}</td></tr>`).join('');}
-function bars(){const agg={};PROD.forEach(p=>{const ch=p[2];const mc=p[3]||0;const mw=p[4]>0?mc/(p[4]/100):mc;
-  if(!agg[ch])agg[ch]={c:0,w:0};agg[ch].c+=mc;agg[ch].w+=mw;});
- const arr=Object.entries(agg).map(([ch,o])=>({ch,c:o.c/1000,share:o.w>0?100*o.c/o.w:0})).sort((a,b)=>b.c-a.c).slice(0,12);
- const mx=Math.max(...arr.map(a=>a.c),0.01);
- document.getElementById('bars').innerHTML=arr.map(a=>{const col=a.share>=50?'var(--red)':'var(--navy)';
-  return `<div class="row"><div class="lab">${a.ch} ${(CHNAME[a.ch]||'').slice(0,32)}</div>
-   <div class="track"><div class="fill" style="width:${100*a.c/mx}%;background:${col}"></div></div>
-   <div class="val">$${a.c.toFixed(1)}b &middot; ${a.share.toFixed(0)}%</div></div>`;}).join('');}
-function refreshAll(){compute();kpis();scatter();table();bars();
- const chs=[...new Set(PROD.map(p=>p[2]))].sort();const sel=document.getElementById('chsel');
- sel.innerHTML='<option value="">All chapters</option>'+chs.map(c=>`<option value="${c}">${c} ${(CHNAME[c]||'').slice(0,30)}</option>`).join('');}
-async function loadCountry(iso){document.getElementById('loading').textContent='loading...';
- const r=await fetch('data/'+iso+'.json');PROD=await r.json();
- const meta=INDEX.find(d=>d.iso===iso)||{};S.iso=iso;S.name=meta.name||iso;
- document.getElementById('title').textContent='Import Localization Atlas: '+S.name+' and China';
- document.getElementById('loading').textContent='';refreshAll();}
-function bindSlider(id,key){const el=document.getElementById(id),v=document.getElementById(id+'v');
- const setw=()=>{wDv.textContent=Math.round(norm()[0]*100)+'%';wSv.textContent=Math.round(norm()[1]*100)+'%';wCv.textContent=Math.round(norm()[2]*100)+'%';};
- if(key.startsWith('w'))setw();else v.textContent=el.value+' / 100';
- el.addEventListener('input',()=>{S[key]=+el.value;if(key.startsWith('w'))setw();else v.textContent=el.value+' / 100';requestAnimationFrame(refreshAll);});}
-['wD','wS','wC','eThr','cThr'].forEach(id=>bindSlider(id,id));
-document.getElementById('reset').onclick=()=>{const d={wD:42,wS:25,wC:33,eThr:60,cThr:60};
- for(const k in d){S[k]=d[k];document.getElementById(k).value=d[k];}
- wDv.textContent='42%';wSv.textContent='25%';wCv.textContent='33%';eThrv.textContent='60 / 100';cThrv.textContent='60 / 100';refreshAll();};
-document.getElementById('search').addEventListener('input',e=>{S.search=e.target.value;table();});
-document.getElementById('chsel').addEventListener('change',e=>{S.ch=e.target.value;table();});
-document.getElementById('qsel').addEventListener('change',e=>{S.q=e.target.value;table();});
-document.querySelectorAll('#tbl th').forEach(th=>th.addEventListener('click',()=>{const k=th.dataset.k;if(S.sortK===k)S.sortDir*=-1;else{S.sortK=k;S.sortDir=1;}table();}));
-document.getElementById('country').addEventListener('change',e=>loadCountry(e.target.value));
-const tip=document.getElementById('tip');
-cv.addEventListener('mousemove',e=>{const rect=cv.getBoundingClientRect();const mx=(e.clientX-rect.left)*(W/rect.width),my=(e.clientY-rect.top)*(H/rect.height);
- let best=null,bd=1e9;COMP.forEach(c=>{if(c.EXP==null||c.SOPH==null)return;const dx=sx(c.EXP)-mx,dy=sy(c.SOPH)-my,d=dx*dx+dy*dy;if(d<bd){bd=d;best=c;}});
- if(best&&bd<120){tip.style.opacity=1;tip.style.left=(e.clientX+12)+'px';tip.style.top=(e.clientY+12)+'px';
-  tip.innerHTML=`<b>${best.hs6}</b> ${best.name}<br>$${fmt(best.Mchina,1)}m &middot; dep ${fmt(best.D,0)}% &middot; PCI ${fmt(best.PCI,2)} &middot; CPS ${fmt(best.cps,1)} &middot; Q${best.q}`;}
- else tip.style.opacity=0;});
-cv.addEventListener('mouseleave',()=>tip.style.opacity=0);
-window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{refreshQC();scatter();});
-// init: load country index, populate dropdown, default to Saudi Arabia if present
-(async()=>{INDEX=await (await fetch('index.json')).json();
- const sel=document.getElementById('country');
- sel.innerHTML=INDEX.map(d=>`<option value="${d.iso}">${d.name} ($${d.china_bn.toFixed(0)}b)</option>`).join('');
- const def=INDEX.find(d=>d.iso==='SAU')?'SAU':INDEX[0].iso;sel.value=def;loadCountry(def);})();
-</script></body></html>
+<script>'use strict';
+const CHAPTER_NAMES={"01":"Animals; live","02":"Meat and edible meat offal","03":"Fish and crustaceans, molluscs and other aqu","04":"Dairy produce; birds' eggs; natural honey; e","05":"Animal originated products; not elsewhere sp","06":"Trees and other plants, live; bulbs, roots a","07":"Vegetables and certain roots and tubers; edi","08":"Fruit and nuts, edible; peel of citrus fruit","09":"Coffee, tea, mate and spices","10":"Cereals","11":"Products of the milling industry; malt, star","12":"Oil seeds and oleaginous fruits; miscellaneo","13":"Lac; gums, resins and other vegetable saps a","14":"Vegetable plaiting materials; vegetable prod","15":"Animal, vegetable or microbial fats and oils","16":"Meat, fish, crustaceans, molluscs or other a","17":"Sugars and sugar confectionery","18":"Cocoa and cocoa preparations","19":"Preparations of cereals, flour, starch or mi","20":"Preparations of vegetables, fruit, nuts or o","21":"Miscellaneous edible preparations","22":"Beverages, spirits and vinegar","23":"Food industries, residues and wastes thereof","24":"Tobacco and manufactured tobacco substitutes","25":"Salt; sulphur; earths, stone; plastering mat","26":"Ores, slag and ash","27":"Mineral fuels, mineral oils and products of ","28":"Inorganic chemicals; organic and inorganic c","29":"Organic chemicals","30":"Pharmaceutical products","31":"Fertilizers","32":"Tanning or dyeing extracts; tannins and thei","33":"Essential oils and resinoids; perfumery, cos","34":"Soap, organic surface-active agents; washing","35":"Albuminoidal substances; modified starches; ","36":"Explosives; pyrotechnic products; matches; p","37":"Photographic or cinematographic goods","38":"Chemical products n.e.c.","39":"Plastics and articles thereof","40":"Rubber and articles thereof","41":"Raw hides and skins (other than furskins) an","42":"Articles of leather; saddlery and harness; t","43":"Furskins and artificial fur; manufactures th","44":"Wood and articles of wood; wood charcoal","45":"Cork and articles of cork","46":"Manufactures of straw, esparto or other plai","47":"Pulp of wood or other fibrous cellulosic mat","48":"Paper and paperboard; articles of paper pulp","49":"Printed books, newspapers, pictures and othe","50":"Silk","51":"Wool, fine or coarse animal hair; horsehair ","52":"Cotton","53":"Vegetable textile fibres; paper yarn and wov","54":"Man-made filaments; strip and the like of ma","55":"Man-made staple fibres","56":"Wadding, felt and nonwovens, special yarns; ","57":"Carpets and other textile floor coverings","58":"Fabrics; special woven fabrics, tufted texti","59":"Textile fabrics; impregnated, coated, covere","60":"Fabrics; knitted or crocheted","61":"Apparel and clothing accessories; knitted or","62":"Apparel and clothing accessories; not knitte","63":"Textiles, made up articles; sets; worn cloth","64":"Footwear; gaiters and the like; parts of suc","65":"Headgear and parts thereof","66":"Umbrellas, sun umbrellas, walking-sticks, se","67":"Feathers and down, prepared; and articles ma","68":"Stone, plaster, cement, asbestos, mica or si","69":"Ceramic products","70":"Glass and glassware","71":"Natural, cultured pearls; precious, semi-pre","72":"Iron and steel","73":"Iron or steel articles","74":"Copper and articles thereof","75":"Nickel and articles thereof","76":"Aluminium and articles thereof","78":"Lead and articles thereof","79":"Zinc and articles thereof","80":"Tin; articles thereof","81":"Metals; n.e.c., cermets and articles thereof","82":"Tools, implements, cutlery, spoons and forks","83":"Metal; miscellaneous products of base metal","84":"Machinery and mechanical appliances, boilers","85":"Electrical machinery and equipment and parts","86":"Railway, tramway locomotives, rolling-stock ","87":"Vehicles; other than railway or tramway roll","88":"Aircraft, spacecraft, and parts thereof","89":"Ships, boats and floating structures","90":"Optical, photographic, cinematographic, meas","91":"Clocks and watches and parts thereof","92":"Musical instruments; parts and accessories o","93":"Arms and ammunition; parts and accessories t","94":"Furniture; bedding, mattresses, mattress sup","95":"Toys, games and sports requisites; parts and","96":"Miscellaneous manufactured articles","97":"Works of art; collectors' pieces and antique","99":"Commodities not specified according to kind"};
+const DEFAULTS=Object.freeze({wD:41.7,wS:25,wC:33.3,eThr:60,cThr:60});
+const PRIORITY=Object.freeze({A:'Localize',B:'Diversify',C:'Watch',D:'Low',U:'Missing PCI'});
+const S={...DEFAULTS,sortKey:'rank',sortDirection:1,quadrant:'',chapter:'',search:'',iso:'',name:'',renderLimit:100};
+let PRODUCTS=[],COMPUTED=[],COUNTRIES=[],CURRENT_META=null,loadController=null,refreshFrame=0,appReady=false,handlingHash=false;
+const byId=id=>document.getElementById(id);
+const elements={app:byId('app'),workspace:byId('workspace'),country:byId('country'),countrySearch:byId('countrySearch'),countryStatus:byId('countryStatus'),title:byId('title'),kpis:byId('kpis'),search:byId('search'),chapter:byId('chapterSelect'),quadrant:byId('quadrantSelect'),tableBody:byId('tableBody'),tableCount:byId('tableCount'),showMore:byId('showMore'),chapterSummary:byId('chapterSummary'),sectors:byId('sectors'),tip:byId('tip'),canvas:byId('scatter')};
+const ctx=elements.canvas.getContext('2d');
+const LOGICAL_WIDTH=760,LOGICAL_HEIGHT=520,PAD={left:55,right:20,top:22,bottom:47};
+const sx=value=>PAD.left+(value/100)*(LOGICAL_WIDTH-PAD.left-PAD.right);
+const sy=value=>LOGICAL_HEIGHT-PAD.bottom-(value/100)*(LOGICAL_HEIGHT-PAD.top-PAD.bottom);
+let plottedPoints=[];
+
+function finiteNumber(value){return typeof value==='number'&&Number.isFinite(value);}
+function clamp(value,minimum,maximum){return Math.min(maximum,Math.max(minimum,value));}
+function exactChina(product){return finiteNumber(product[14])?product[14]:product[3];}
+function worldImports(product){return finiteNumber(product[12])?product[12]:(product[4]>0?exactChina(product)/(product[4]/100):null);}
+function pciSourceLabel(source){return source===6?'exact HS6 bridge':source===4?'HS4 fallback':'unavailable';}
+function formatNumber(value,digits=1){return finiteNumber(value)?value.toLocaleString(undefined,{minimumFractionDigits:digits,maximumFractionDigits:digits}):'—';}
+function formatMoneyBillions(millions){return '$'+formatNumber(millions/1000,1)+'b';}
+function normalizedWeights(){const total=S.wD+S.wS+S.wC;return total>0?[S.wD/total,S.wS/total,S.wC/total]:[DEFAULTS.wD/100,DEFAULTS.wS/100,DEFAULTS.wC/100];}
+function setStatus(message,{error=false,loading=false}={}){elements.countryStatus.classList.toggle('error',error);elements.countryStatus.replaceChildren();if(loading){const spinner=document.createElement('span');spinner.className='spinner';spinner.setAttribute('aria-hidden','true');elements.countryStatus.append(spinner);}elements.countryStatus.append(document.createTextNode(message));}
+
+function compute(){
+  const [wd,ws,wc]=normalizedWeights();
+  COMPUTED=PRODUCTS.map(product=>{
+    const zD=product[6],zS=product[7],zC=product[8];let numerator=0,denominator=0;
+    if(finiteNumber(zD)&&wd>0){numerator+=wd*zD;denominator+=wd;}if(finiteNumber(zS)&&ws>0){numerator+=ws*zS;denominator+=ws;}if(finiteNumber(zC)&&wc>0){numerator+=wc*zC;denominator+=wc;}
+    const cps=denominator>0?numerator/denominator:null;
+    const exposure=product[9],sophistication=product[10];let priority='U';
+    if(finiteNumber(sophistication)){const highExposure=finiteNumber(exposure)&&exposure>=S.eThr,highComplexity=sophistication>=S.cThr;priority=highExposure?(highComplexity?'A':'B'):(highComplexity?'C':'D');}
+    const Mchina=exactChina(product),Mworld=worldImports(product),dependence=finiteNumber(Mworld)&&Mworld>0?100*Mchina/Mworld:product[4];
+    return{hs6:product[0],name:product[1],chapter:product[2],Mchina,Mworld,D:dependence,PCI:product[5],zD,zS,zC,exposure,sophistication,material:product[11]===1,pciSource:product[13]||0,cps,priority,rank:0};
+  });
+  const ranked=COMPUTED.filter(row=>finiteNumber(row.cps)).sort((a,b)=>(b.cps-a.cps)||a.hs6.localeCompare(b.hs6));ranked.forEach((row,index)=>row.rank=index+1);
+}
+
+function renderKPIs(){
+  const counts={A:0,B:0,C:0,D:0,U:0};COMPUTED.forEach(row=>counts[row.priority]++);
+  const localize=COMPUTED.filter(row=>row.priority==='A'),shortlist=localize.filter(row=>row.material),shortlistValue=shortlist.reduce((sum,row)=>sum+row.Mchina,0);
+  const total=PRODUCTS.reduce((sum,product)=>sum+exactChina(product),0);const coverage=CURRENT_META&&finiteNumber(CURRENT_META.pci_coverage)?CURRENT_META.pci_coverage:100*(PRODUCTS.length-counts.U)/Math.max(PRODUCTS.length,1);
+  const importShare=CURRENT_META&&finiteNumber(CURRENT_META.share)?` · ${CURRENT_META.share}% of all imports`:'';const cards=[[formatMoneyBillions(total),S.name+' imports from China'+importShare],[PRODUCTS.length.toLocaleString(),'HS6 products sourced from China'],[counts.A.toLocaleString(),'A · Localize products'],[shortlist.length.toLocaleString(),'material shortlist · '+formatMoneyBillions(shortlistValue)],[formatNumber(coverage,1)+'%','products with bridged PCI']];
+  const fragment=document.createDocumentFragment();for(const [value,label] of cards){const card=document.createElement('div');card.className='card';const key=document.createElement('div');key.className='k';key.textContent=value;const text=document.createElement('div');text.className='l';text.textContent=label;card.append(key,text);fragment.append(card);}elements.kpis.replaceChildren(fragment);
+  for(const key of Object.keys(counts))byId('n'+key).textContent='('+counts[key].toLocaleString()+')';
+  byId('mapSummary').textContent=`${counts.A.toLocaleString()} Localize, ${counts.B.toLocaleString()} Diversify, ${counts.C.toLocaleString()} Watch, ${counts.D.toLocaleString()} Low, and ${counts.U.toLocaleString()} with unavailable complexity.`;
+}
+
+function canvasColors(){const styles=getComputedStyle(document.documentElement),get=name=>styles.getPropertyValue(name).trim();return{ink:get('--ink'),mut:get('--mut'),line:get('--line'),card:get('--card'),A:get('--A'),B:get('--B'),C:get('--C'),D:get('--D')};}
+function prepareCanvas(){const ratio=Math.min(window.devicePixelRatio||1,2);elements.canvas.width=Math.round(LOGICAL_WIDTH*ratio);elements.canvas.height=Math.round(LOGICAL_HEIGHT*ratio);ctx.setTransform(ratio,0,0,ratio,0,0);}
+function renderScatter(){
+  prepareCanvas();const colors=canvasColors();ctx.clearRect(0,0,LOGICAL_WIDTH,LOGICAL_HEIGHT);ctx.fillStyle=colors.card;ctx.fillRect(0,0,LOGICAL_WIDTH,LOGICAL_HEIGHT);
+  ctx.strokeStyle=colors.line;ctx.fillStyle=colors.mut;ctx.font='11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.lineWidth=1;ctx.textAlign='center';ctx.textBaseline='top';
+  for(let tick=0;tick<=100;tick+=20){const x=sx(tick),y=sy(tick);ctx.globalAlpha=.7;ctx.beginPath();ctx.moveTo(x,PAD.top);ctx.lineTo(x,LOGICAL_HEIGHT-PAD.bottom);ctx.moveTo(PAD.left,y);ctx.lineTo(LOGICAL_WIDTH-PAD.right,y);ctx.stroke();ctx.globalAlpha=1;ctx.fillText(String(tick),x,LOGICAL_HEIGHT-PAD.bottom+7);ctx.textAlign='right';ctx.textBaseline='middle';ctx.fillText(String(tick),PAD.left-8,y);ctx.textAlign='center';ctx.textBaseline='top';}
+  ctx.strokeStyle=colors.mut;ctx.setLineDash([6,5]);ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(sx(S.eThr),PAD.top);ctx.lineTo(sx(S.eThr),LOGICAL_HEIGHT-PAD.bottom);ctx.moveTo(PAD.left,sy(S.cThr));ctx.lineTo(LOGICAL_WIDTH-PAD.right,sy(S.cThr));ctx.stroke();ctx.setLineDash([]);
+  const order={D:0,C:1,B:2,A:3};plottedPoints=[];COMPUTED.filter(row=>row.priority!=='U'&&finiteNumber(row.exposure)&&finiteNumber(row.sophistication)).sort((a,b)=>order[a.priority]-order[b.priority]).forEach(row=>{const radius=1.7+2.6*clamp((Math.log10(Math.max(row.Mchina,.001))+2)/6,0,1),r=row.priority==='A'?radius*1.25:radius;ctx.globalAlpha=row.priority==='A'?.82:.38;ctx.fillStyle=colors[row.priority];ctx.beginPath();ctx.arc(sx(row.exposure),sy(row.sophistication),r,0,Math.PI*2);ctx.fill();plottedPoints.push({row,x:sx(row.exposure),y:sy(row.sophistication),r:Math.max(r,4)});});ctx.globalAlpha=1;
+  ctx.fillStyle=colors.mut;ctx.font='12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.textAlign='center';ctx.textBaseline='alphabetic';ctx.fillText('China exposure →',LOGICAL_WIDTH/2,LOGICAL_HEIGHT-10);ctx.save();ctx.translate(15,LOGICAL_HEIGHT/2);ctx.rotate(-Math.PI/2);ctx.fillText('Economic complexity →',0,0);ctx.restore();ctx.font='700 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillStyle=colors.A;ctx.fillText('A · LOCALIZE',sx((S.eThr+100)/2),sy(96));ctx.fillStyle=colors.B;ctx.fillText('B · DIVERSIFY',sx((S.eThr+100)/2),sy(5));ctx.fillStyle=colors.C;ctx.fillText('C · WATCH',sx(S.eThr/2),sy(96));ctx.fillStyle=colors.D;ctx.fillText('D · LOW',sx(S.eThr/2),sy(5));
+}
+
+function compareValues(left,right,key){const a=left[key],b=right[key];if(a===b)return left.hs6.localeCompare(right.hs6);if(a==null)return 1;if(b==null)return-1;if(typeof a==='string')return a.localeCompare(b);return a-b;}
+function filteredRows(){let rows=COMPUTED.filter(row=>finiteNumber(row.cps));if(S.quadrant)rows=rows.filter(row=>row.priority===S.quadrant);if(S.chapter)rows=rows.filter(row=>row.chapter===S.chapter);if(S.search){const query=S.search.toLocaleLowerCase();rows=rows.filter(row=>row.name.toLocaleLowerCase().includes(query)||row.hs6.includes(query));}rows.sort((a,b)=>S.sortDirection*compareValues(a,b,S.sortKey));return rows;}
+function cell(text,className='',title=''){const td=document.createElement('td');if(className)td.className=className;td.textContent=text;if(title)td.title=title;return td;}
+function renderTable(){
+  const rows=filteredRows(),shown=rows.slice(0,S.renderLimit),fragment=document.createDocumentFragment();
+  for(const row of shown){const tr=document.createElement('tr');tr.append(cell(row.rank.toLocaleString(),'num'),cell(row.hs6,'mono'),cell(row.name,'product'),cell(formatNumber(row.Mchina,1),'num'),cell(formatNumber(row.D,1)+'%','num hide-mobile'),cell(formatNumber(row.PCI,2),'num hide-mobile',`PCI source: ${pciSourceLabel(row.pciSource)}`),cell(formatNumber(row.cps,1),'num'));const priority=cell('');const badge=document.createElement('span');badge.className='badge '+row.priority;badge.textContent=row.priority+' · '+PRIORITY[row.priority];priority.append(badge);tr.append(priority);fragment.append(tr);}
+  if(!shown.length){const tr=document.createElement('tr'),td=cell('No products match the current filters.','empty');td.colSpan=8;tr.append(td);fragment.append(tr);}elements.tableBody.replaceChildren(fragment);
+  elements.tableCount.textContent=`${Math.min(rows.length,S.renderLimit).toLocaleString()} of ${rows.length.toLocaleString()} filtered products shown`;
+  elements.showMore.hidden=rows.length<=S.renderLimit;elements.showMore.textContent=`Show ${Math.min(100,rows.length-S.renderLimit).toLocaleString()} more`;
+  document.querySelectorAll('#table th').forEach(th=>{const active=th.dataset.key===S.sortKey;th.setAttribute('aria-sort',active?(S.sortDirection===1?'ascending':'descending'):'none');});renderChapterSummary();
+}
+
+function chapterAggregates(){const aggregate={};for(const row of COMPUTED){if(!aggregate[row.chapter])aggregate[row.chapter]={china:0,world:0,count:0};const item=aggregate[row.chapter];item.china+=row.Mchina;if(finiteNumber(row.Mworld))item.world+=row.Mworld;item.count++;}return aggregate;}
+function renderChapterSummary(){if(!S.chapter){elements.chapterSummary.hidden=true;return;}const item=chapterAggregates()[S.chapter];if(!item){elements.chapterSummary.hidden=true;return;}const share=item.world>0?100*item.china/item.world:null;elements.chapterSummary.hidden=false;elements.chapterSummary.textContent=`Chapter ${S.chapter} · ${CHAPTER_NAMES[S.chapter]||'Unnamed'}: ${item.count.toLocaleString()} China-sourced products, ${formatMoneyBillions(item.china)}, ${formatNumber(share,1)}% dependence within this product set.`;}
+function renderSectors(){
+  const aggregate=chapterAggregates(),rows=Object.entries(aggregate).map(([chapter,item])=>({chapter,...item,share:item.world>0?100*item.china/item.world:null})).sort((a,b)=>b.china-a.china).slice(0,14),maximum=Math.max(...rows.map(row=>row.china),.001),fragment=document.createDocumentFragment();
+  for(const row of rows){const button=document.createElement('button');button.type='button';button.className='sector'+(row.share>=50?' high':'');button.dataset.chapter=row.chapter;button.title=`Filter table to chapter ${row.chapter}: ${CHAPTER_NAMES[row.chapter]||''}`;const label=document.createElement('span');label.className='lab';label.textContent=`${row.chapter} · ${CHAPTER_NAMES[row.chapter]||'Unnamed'}`;const progress=document.createElement('progress');progress.max=maximum;progress.value=row.china;progress.setAttribute('aria-label',`${formatMoneyBillions(row.china)} of China imports`);const value=document.createElement('span');value.className='val';value.textContent=`${formatMoneyBillions(row.china)} · ${formatNumber(row.share,0)}%`;button.append(label,progress,value);fragment.append(button);}elements.sectors.replaceChildren(fragment);
+}
+
+function populateChapters(){const chapters=[...new Set(PRODUCTS.map(product=>product[2]))].sort(),fragment=document.createDocumentFragment();const all=document.createElement('option');all.value='';all.textContent='All chapters';fragment.append(all);for(const chapter of chapters){const option=document.createElement('option');option.value=chapter;option.textContent=`${chapter} · ${(CHAPTER_NAMES[chapter]||'Unnamed').slice(0,36)}`;fragment.append(option);}elements.chapter.replaceChildren(fragment);if(chapters.includes(S.chapter))elements.chapter.value=S.chapter;else{S.chapter='';elements.chapter.value='';}}
+function renderWeightLabels(){const weights=normalizedWeights();byId('wDv').textContent=(weights[0]*100).toFixed(1)+'%';byId('wSv').textContent=(weights[1]*100).toFixed(1)+'%';byId('wCv').textContent=(weights[2]*100).toFixed(1)+'%';byId('eThrv').textContent=S.eThr.toFixed(0)+' / 100';byId('cThrv').textContent=S.cThr.toFixed(0)+' / 100';const fallback=S.wD+S.wS+S.wC===0;byId('weightNote').textContent=fallback?'All raw weights are zero; documented defaults are used until a weight is raised.':'CPS re-normalizes over available indicators; missing PCI does not erase a product from the ranking.';}
+function refreshAll(){compute();renderWeightLabels();renderKPIs();renderScatter();renderTable();renderSectors();}
+function scheduleRefresh(){cancelAnimationFrame(refreshFrame);refreshFrame=requestAnimationFrame(()=>{refreshAll();writeHash(false);});}
+
+function renderCountryOptions(query=''){const normalized=query.trim().toLocaleLowerCase(),matches=normalized?COUNTRIES.filter(country=>country.name.toLocaleLowerCase().includes(normalized)||country.iso.toLocaleLowerCase().includes(normalized)):COUNTRIES;const fragment=document.createDocumentFragment();for(const country of matches){const option=document.createElement('option');option.value=country.iso;option.textContent=`${country.name} · ${country.iso} · $${country.china_bn.toFixed(1)}b`;fragment.append(option);}if(!matches.length){const option=document.createElement('option');option.disabled=true;option.textContent='No matching countries';fragment.append(option);}elements.country.replaceChildren(fragment);if(matches.some(country=>country.iso===S.iso))elements.country.value=S.iso;setStatus(`${matches.length.toLocaleString()} of ${COUNTRIES.length.toLocaleString()} countries available`);return matches;}
+function validHashNumber(params,key,fallback,min=0,max=100){const value=Number(params.get(key));return params.has(key)&&Number.isFinite(value)?clamp(value,min,max):fallback;}
+function readHash(){const params=new URLSearchParams(location.hash.replace(/^#/,'')),chapter=params.get('chapter');return{iso:(params.get('country')||'').toUpperCase(),wD:validHashNumber(params,'wd',DEFAULTS.wD),wS:validHashNumber(params,'ws',DEFAULTS.wS),wC:validHashNumber(params,'wc',DEFAULTS.wC),eThr:validHashNumber(params,'exposure',DEFAULTS.eThr),cThr:validHashNumber(params,'complexity',DEFAULTS.cThr),chapter:chapter?chapter.padStart(2,'0').slice(-2):'',quadrant:PRIORITY[params.get('priority')]?params.get('priority'):'',search:(params.get('query')||'').slice(0,80)};}
+function writeHash(push){if(!S.iso||handlingHash)return;const params=new URLSearchParams({country:S.iso,wd:String(S.wD),ws:String(S.wS),wc:String(S.wC),exposure:String(S.eThr),complexity:String(S.cThr)});if(S.chapter)params.set('chapter',S.chapter);if(S.quadrant)params.set('priority',S.quadrant);if(S.search)params.set('query',S.search);const hash='#'+params.toString();if(location.hash===hash)return;(push?history.pushState:history.replaceState).call(history,null,'',hash);}
+function applyControlState(state){for(const key of ['wD','wS','wC','eThr','cThr']){S[key]=state[key];byId(key).value=state[key];}S.chapter=state.chapter;S.quadrant=state.quadrant;S.search=state.search;elements.quadrant.value=S.quadrant;elements.search.value=S.search;}
+
+async function loadCountry(iso,{push=false}={}){
+  const meta=COUNTRIES.find(country=>country.iso===iso);if(!meta)return;loadController?.abort();const controller=new AbortController();loadController=controller;elements.app.classList.add('is-loading');elements.country.disabled=true;setStatus(`Loading ${meta.name}…`,{loading:true});
+  try{const response=await fetch(`data/${encodeURIComponent(iso)}.json`,{signal:controller.signal,cache:'default'});if(!response.ok)throw new Error(`country data returned HTTP ${response.status}`);const payload=await response.json(),records=Array.isArray(payload)?payload:payload.products;if(!Array.isArray(records)||records.some(record=>!Array.isArray(record)||record.length<12))throw new Error('country data has an invalid schema');PRODUCTS=records;CURRENT_META=meta;S.iso=iso;S.name=meta.name;S.renderLimit=100;elements.countrySearch.value='';renderCountryOptions();elements.country.value=iso;elements.title.textContent=`Import Localization Atlas · ${meta.name}`;document.title=`${meta.name} · Import Localization Atlas`;populateChapters();elements.chapter.value=S.chapter;refreshAll();writeHash(push);setStatus(`${meta.name} loaded · ${PRODUCTS.length.toLocaleString()} HS6 products`);}
+  catch(error){if(error.name==='AbortError')return;console.error(error);setStatus(`Could not load ${meta.name}: ${error.message}. If opened as a local file, serve docs/ over HTTP.`,{error:true});}
+  finally{if(loadController===controller){elements.app.classList.remove('is-loading');elements.country.disabled=false;}}
+}
+
+function csvEscape(value){const text=String(value??'');return /[",\r\n]/.test(text)?'"'+text.replaceAll('"','""')+'"':text;}
+function downloadCSV(){const headers=['Rank','HS6','Product','HS2','Chapter','China imports USD millions','World imports USD millions','China dependence percent','PCI','PCI bridge','Normalized dependence','Normalized scale','Normalized complexity','Exposure','Sophistication','CPS','Priority'];const lines=[headers];for(const row of filteredRows())lines.push([row.rank,row.hs6,row.name,row.chapter,CHAPTER_NAMES[row.chapter]||'',row.Mchina,row.Mworld??'',row.D??'',row.PCI??'',pciSourceLabel(row.pciSource),row.zD??'',row.zS??'',row.zC??'',row.exposure??'',row.sophistication??'',row.cps??'',row.priority+' '+PRIORITY[row.priority]]);const blob=new Blob(['\ufeff'+lines.map(line=>line.map(csvEscape).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}),link=document.createElement('a'),url=URL.createObjectURL(blob);link.href=url;link.download=`import-localization-${S.iso.toLowerCase()}-${new Date().toISOString().slice(0,10)}.csv`;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);setStatus(`Downloaded ${Math.max(0,lines.length-1).toLocaleString()} filtered products for ${S.name}.`);}
+async function copyShareLink(){writeHash(false);try{await navigator.clipboard.writeText(location.href);setStatus('Share link copied to the clipboard.');}catch{const field=document.createElement('textarea');field.value=location.href;field.className='sr-only';document.body.append(field);field.select();const copied=document.execCommand('copy');field.remove();setStatus(copied?'Share link copied to the clipboard.':'Copy the current URL from the address bar.',{error:!copied});}}
+
+for(const key of ['wD','wS','wC','eThr','cThr'])byId(key).addEventListener('input',event=>{S[key]=Number(event.target.value);scheduleRefresh();});
+byId('reset').addEventListener('click',()=>{applyControlState({...DEFAULTS,chapter:'',quadrant:'',search:''});elements.chapter.value='';S.renderLimit=100;refreshAll();writeHash(false);});
+elements.search.addEventListener('input',event=>{S.search=event.target.value;S.renderLimit=100;renderTable();writeHash(false);});
+elements.chapter.addEventListener('change',event=>{S.chapter=event.target.value;S.renderLimit=100;renderTable();writeHash(false);});
+elements.quadrant.addEventListener('change',event=>{S.quadrant=event.target.value;S.renderLimit=100;renderTable();writeHash(false);});
+elements.country.addEventListener('change',event=>loadCountry(event.target.value,{push:true}));
+elements.countrySearch.addEventListener('input',event=>renderCountryOptions(event.target.value));
+elements.countrySearch.addEventListener('keydown',event=>{if(event.key==='Enter'){const matches=renderCountryOptions(event.currentTarget.value);if(matches.length){event.preventDefault();loadCountry(matches[0].iso,{push:true});}}});
+byId('download').addEventListener('click',downloadCSV);byId('share').addEventListener('click',copyShareLink);
+byId('clearFilters').addEventListener('click',()=>{S.search='';S.chapter='';S.quadrant='';S.renderLimit=100;elements.search.value='';elements.chapter.value='';elements.quadrant.value='';renderTable();writeHash(false);});
+elements.showMore.addEventListener('click',()=>{S.renderLimit+=100;renderTable();});
+elements.sectors.addEventListener('click',event=>{const button=event.target.closest('[data-chapter]');if(!button)return;S.chapter=button.dataset.chapter;elements.chapter.value=S.chapter;S.renderLimit=100;renderTable();writeHash(false);byId('table-title').scrollIntoView({block:'start'});});
+document.querySelectorAll('#table th button').forEach(button=>button.addEventListener('click',()=>{const key=button.parentElement.dataset.key;if(S.sortKey===key)S.sortDirection*=-1;else{S.sortKey=key;S.sortDirection=['Mchina','D','PCI','cps'].includes(key)?-1:1;}renderTable();}));
+
+elements.canvas.addEventListener('pointermove',event=>{const rect=elements.canvas.getBoundingClientRect(),x=(event.clientX-rect.left)*LOGICAL_WIDTH/rect.width,y=(event.clientY-rect.top)*LOGICAL_HEIGHT/rect.height;let closest=null,distance=Infinity;for(const point of plottedPoints){const d=(point.x-x)**2+(point.y-y)**2;if(d<distance){closest=point;distance=d;}}if(!closest||distance>150){elements.tip.classList.remove('show');return;}const row=closest.row;elements.tip.textContent=`${row.hs6} · ${row.name}\nChina ${formatNumber(row.Mchina,1)}m · dependence ${formatNumber(row.D,1)}%\nPCI ${formatNumber(row.PCI,2)} · CPS ${formatNumber(row.cps,1)} · ${row.priority} ${PRIORITY[row.priority]}`;elements.tip.classList.add('show');});
+elements.canvas.addEventListener('pointerleave',()=>elements.tip.classList.remove('show'));
+window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>renderScatter());
+window.addEventListener('hashchange',async()=>{if(!appReady)return;handlingHash=true;const state=readHash();applyControlState(state);populateChapters();if(COUNTRIES.some(country=>country.iso===state.iso)&&state.iso!==S.iso)await loadCountry(state.iso);else refreshAll();handlingHash=false;});
+
+(async function initialize(){
+  try{const response=await fetch('index.json');if(!response.ok)throw new Error(`country index returned HTTP ${response.status}`);COUNTRIES=await response.json();if(!Array.isArray(COUNTRIES)||!COUNTRIES.length)throw new Error('country index is empty or invalid');const state=readHash();applyControlState(state);const defaultIso=COUNTRIES.some(country=>country.iso===state.iso)?state.iso:(COUNTRIES.some(country=>country.iso==='SAU')?'SAU':COUNTRIES[0].iso);S.iso=defaultIso;renderCountryOptions();elements.country.disabled=false;appReady=true;await loadCountry(defaultIso);}
+  catch(error){console.error(error);setStatus(`Could not initialize the atlas: ${error.message}. If opened as a local file, serve docs/ over HTTP.`,{error:true});}
+})();</script>
+</body>
+</html>
