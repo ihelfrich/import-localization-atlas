@@ -1,0 +1,7 @@
+baci/
+pci_hs6.csv
+pci_hs4_fallback.csv
+__pycache__/
+*.pyc
+.DS_Store
+*.log
